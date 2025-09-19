@@ -34,7 +34,7 @@ const _checkUniqueUser = async (req, res, next) => {
     }
 };
 
-const __checkSameSpecies = async (req, res, next) => {
+const _checkSameSpecies = async (req, res, next) => {
     const { pet_id1, pet_id2 } = req.body;
     try {
         const { data: pets, error: petsError } = await supabaseRole
@@ -56,8 +56,19 @@ const __checkSameSpecies = async (req, res, next) => {
     }
 };
 
-const __checkSameOwner = async (req, res, next) => {
+const _checkSameOwner = async (req, res, next) => {
     const { pet_id1, pet_id2 } = req.body;
+
+    const token= req.headers.authorization;
+
+    if (!token) return res.status(401).json({ error: "Missing token" });
+
+    const supabaseUser = createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_KEY,
+        { global: { headers: { Authorization: `Bearer ${token}` } } }
+    );
+
     try {
         const { data: pets, error: petsError } = await supabaseRole
             .from('Pets')
@@ -65,7 +76,7 @@ const __checkSameOwner = async (req, res, next) => {
             .in('id', [pet_id1, pet_id2]);
         if (petsError) return res.status(500).json({ error: `Unknown pets owner error: ${petsError.code}` });
         if (pets.length !== 2) return res.status(400).json({ error: 'Invalid pet IDs' });
-        if (pets[0].owner_uid !== pets[1].owner_uid) {
+        if (pets[0].owner_uid !== pets[1].owner_uid || pets[0].owner_uid !== (await supabaseUser.auth.getUser()).data.user.id) {
             return res.status(400).json({ error: 'Pets do not have the same owner' });
         }
         next();
@@ -130,15 +141,16 @@ app.get("/my-pets", async (req, res) => {
 
     const { data, error } = await supabaseUser
         .from("Pets")
-        .select("species:Species(species_name), atk, def, spd, hp")
+        .select("species:Species(species_name), atk, def, spd, hp, id")
         .eq("owner_uid", user.id);
 
     const flattened = data.map(pet => ({
+        id: pet.id,
         atk: pet.atk,
         def: pet.def,
         spd: pet.spd,
         hp: pet.hp,
-        species_name: pet.species.species_name
+        species_name: pet.species.species_name,
     }));
 
     if (error) return res.status(400).json({ error: `Unknown error: ${error.code}` });
@@ -146,7 +158,7 @@ app.get("/my-pets", async (req, res) => {
     res.json({ pets: flattened });
 });
 
-app.post("/breed-pets", __checkSameSpecies, __checkSameOwner, async (req, res) => {
+app.post("/breed-pets", _checkSameSpecies, _checkSameOwner, async (req, res) => {
     const { pet_id1, pet_id2 } = req.body;
 
     const token= req.headers.authorization;
@@ -168,21 +180,21 @@ app.post("/breed-pets", __checkSameSpecies, __checkSameOwner, async (req, res) =
 
     const child = {
         species_id: pets[0].species_id,
-        atk: Math.floor((pets[0].atk + pets[1].atk) / 2 * (0.9 + Math.random() * 0.2)),
-        def: Math.floor((pets[0].def + pets[1].def) / 2 * (0.9 + Math.random() * 0.2)),
-        spd: Math.floor((pets[0].spd + pets[1].spd) / 2 * (0.9 + Math.random() * 0.2)),
-        hp: Math.floor((pets[0].hp + pets[1].hp) / 2 * (0.9 + Math.random() * 0.2)),
+        atk:    Math.floor((pets[0].atk + pets[1].atk)  / 2 * (0.9 + Math.random() * 0.2)),
+        def:    Math.floor((pets[0].def + pets[1].def)  / 2 * (0.9 + Math.random() * 0.2)),
+        spd:    Math.floor((pets[0].spd + pets[1].spd)  / 2 * (0.9 + Math.random() * 0.2)),
+        hp:     Math.floor((pets[0].hp + pets[1].hp)    / 2 * (0.9 + Math.random() * 0.2)),
         owner_uid: pets[0].owner_uid,
     };
-    console.log(child);
 
-    const { error: breedingError } = await supabaseUser
+    const { data: insertedData, error: breedingError } = await supabaseUser
         .from('Pets')
-        .insert([child]);
+        .insert([child])
+        .select();
 
     if (breedingError) return res.status(400).json({ error: `Unknown breeding error: ${breedingError.code}` });
 
-    res.json({ message: 'Breeding successful', child });
+    res.json({ message: 'Breeding successful', child: insertedData[0] });
 });
 
 app.listen(process.env.PORT || 3000, () => console.log('Server running...'));
