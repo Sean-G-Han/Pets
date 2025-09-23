@@ -2,8 +2,9 @@
 import { defineProps } from 'vue'
 import type { Pet } from './types/pets'
 import { PetAnimation } from './types/petAnimation'
+import NumberMeter from './NumberMeter.vue'
 
-type RenderMode = 'circle' | 'large'
+type RenderMode = 'circle' | 'large' | 'card'
 
 const props = defineProps<Pet & { mode?: RenderMode }>()
 
@@ -18,28 +19,43 @@ const clicked = () => {
 
 <template>
   <div
-    class="tooltip"
     :class="{
       'large-border': props.mode === 'large',
       'circle-border': props.mode === 'circle',
+      'card-border': props.mode === 'card',
     }"
     @click="clicked"
   >
     <img :src="PetAnimation.getSprite(props)" :alt="props.species_name" />
-    <div class="tooltip-text">
-      {{ props.species_name }}
+
+    <div v-if="props.mode === 'card'" class="pet-info">
+      id: {{ props.id }} the {{ props.species_name }}
+      <NumberMeter label="Attack" :value="props.atk" :threshold="50" />
+      <NumberMeter label="Defense" :value="props.def" :threshold="50" />
+      <NumberMeter label="Speed" :value="props.spd" :threshold="50" />
+      <NumberMeter label="Health" :value="props.hp" :threshold="50" />
     </div>
   </div>
 </template>
 
 <style scoped>
-.large-border {
-  height: 300px;
-  width: 300px;
-  padding: 15px;
-  display: inline-block;
-  position: relative;
+.pet-info {
+  padding: 5px;
+  background-color: black;
+  color: white;
+  border: #ffffff 2px solid;
+  width: fit-content;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
+.card-border {
+  background-color: #0055ff;
+  border: #ffffff 4px solid;
+  display: inline-block;
+}
+
 .circle-border {
   border: 6px solid #ffffff;
   background-color: black;
@@ -52,37 +68,13 @@ const clicked = () => {
 }
 
 .circle-border img,
-.large-border img {
+.large-border img,
+.card-border img {
   object-fit: cover;
   width: 100%;
-  height: 100%;
   display: block;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  border-radius: inherit; /* inherit border radius from wrapper */
-}
-
-.tooltip .tooltip-text {
-  visibility: hidden;
-  opacity: 0;
-  width: max-content;
-  background-color: #333;
-  color: #fff;
-  text-align: center;
-  padding: 4px 8px;
-  border-radius: 4px;
-
-  position: absolute;
-  top: 110%;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1;
-
-  transition: opacity 0.2s;
-}
-
-.tooltip:hover .tooltip-text {
-  visibility: visible;
-  opacity: 1;
+  border-radius: inherit;
 }
 </style>

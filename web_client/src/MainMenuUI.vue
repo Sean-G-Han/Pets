@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import PetRenderer from './PetRenderer.vue'
 import { usePetsStore } from '@/stores/petsStore'
 import type { Pet } from './types/pets'
+import router from './router'
 
 const petsStore = usePetsStore()
 const isOpen = ref(true)
@@ -12,6 +13,7 @@ const emit = defineEmits<{
 }>()
 
 const handlePetClick = (pet: Pet) => {
+  isOpen.value = false
   emit('pet-click', pet)
 }
 
@@ -34,12 +36,20 @@ onMounted(loadPets)
 
 <template>
   <div>
-    <button class="toggle-btn" @click="isOpen = !isOpen">
-      {{ isOpen ? 'Hide Menu' : 'Show Menu' }}
-    </button>
+    <div class="button-row">
+      <button class="toggle-btn vt323-regular" @click="isOpen = !isOpen">
+        {{ isOpen ? 'Hide Menu' : 'Show Menu' }}
+      </button>
+
+      <button class="toggle-btn vt323-regular" @click="router.push('/main')">Go to Main</button>
+
+      <button class="toggle-btn vt323-regular" @click="router.push('/replication')">
+        Go to Replication
+      </button>
+    </div>
 
     <div class="menu-wrapper" :class="{ open: isOpen }">
-      <h1 style="text-align: center">My Pets</h1>
+      <h1 style="text-align: center" class="vt323-regular">My Pets</h1>
       <div class="menu">
         <PetRenderer
           v-for="pet in petsStore.getPets"
@@ -59,6 +69,7 @@ onMounted(loadPets)
   top: 0;
   right: 0;
   height: 100vh;
+  max-width: 90vw;
 
   background-color: #333;
   color: white;
@@ -76,19 +87,26 @@ onMounted(loadPets)
   transform: translateX(0);
 }
 
-.toggle-btn {
+.button-row {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
   position: fixed;
-  top: 20px;
+  bottom: 20px;
+  gap: 8px;
   right: 20px;
   z-index: 1001;
+}
 
+.toggle-btn {
+  display: block;
   background: #444;
   color: white;
   border: none;
   padding: 10px;
   cursor: pointer;
   font-size: 16px;
-  transition: background 0.2s;
 }
 
 .toggle-btn:hover {

@@ -11,7 +11,6 @@ html,
 body {
   margin: 0;
   padding: 0;
-  height: 100%;
-  background: rgb(25, 25, 25); /* match your wrapper bg */
+  background: rgb(255, 0, 0);
 }
 </style>

@@ -1,5 +1,5 @@
 @echo off
 cd server
-node server.js
+nodemon server.js
 pause
 exit

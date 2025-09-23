@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { defineProps, computed } from 'vue'
+import './style.css'
 
 type Props = {
   label: string
@@ -24,9 +25,12 @@ const barColor = computed(() => {
 
 <template>
   <div class="meter-wrapper">
-    <div class="label">{{ props.label }}</div>
+    <div class="label vt323-regular">{{ props.label }}</div>
     <div class="number-meter">
-      <div class="number-meter-inner" :style="{ width: barWidth, backgroundColor: barColor }">
+      <div
+        class="number-meter-inner vt323-regular"
+        :style="{ width: barWidth, backgroundColor: barColor }"
+      >
         {{ props.value }}
       </div>
     </div>
@@ -35,25 +39,25 @@ const barColor = computed(() => {
 
 <style scoped>
 .meter-wrapper {
-  margin: 8px 0;
+  margin: 4px 0;
 }
 
 .label {
-  font-size: 24px;
-  width: 100px;
-  margin-bottom: 4px;
+  font-size: 14px;
+  width: 50px;
   text-align: left;
   display: inline-block;
 }
 
 .number-meter {
   display: inline-block;
-  width: 200px;
-  height: 20px;
+  width: 90px;
+  height: 15px;
   background-color: #ddd;
   border-radius: 10px;
   overflow: hidden;
   position: relative;
+  text-align: center;
 }
 
 .number-meter-inner {

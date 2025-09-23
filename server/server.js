@@ -216,11 +216,13 @@ app.post(
 
     const { data: pets, error } = await supabaseUser
       .from("Pets")
-      .select("species_id, atk, def, spd, hp, owner_uid")
+      .select(
+        "species:Species(species_name), species_id, atk, def, spd, hp, owner_uid"
+      )
       .in("id", [pet_id1, pet_id2]);
     if (error) return res.status(400).json({ error: error.code });
 
-    const child = {
+    const childInsert = {
       species_id: pets[0].species_id,
       atk: Math.floor(
         ((pets[0].atk + pets[1].atk) / 2) * (0.9 + Math.random() * 0.2)
@@ -239,12 +241,20 @@ app.post(
 
     const { data: insertedData, error: breedingError } = await supabaseUser
       .from("Pets")
-      .insert([child])
-      .select();
+      .insert([childInsert])
+      .select("id, atk, def, spd, hp, owner_uid");
+
     if (breedingError)
       return res.status(400).json({ error: breedingError.code });
 
-    res.json({ message: "Breeding successful", child: insertedData[0] });
+    const childResponse = {
+      ...insertedData[0],
+      species_name: pets[0].species?.species_name ?? "ERROR",
+    };
+
+    console.log("New pet bred:", childResponse);
+
+    res.json({ message: "Breeding successful", child: childResponse });
   }
 );
 

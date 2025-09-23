@@ -1,5 +1,6 @@
-import LoginPage from '@/LoginPage.vue'
-import MainPage from '@/MainPage.vue'
+import LoginPage from '@/pages/LoginPage.vue'
+import MainPage from '@/pages/MainPage.vue'
+import ReplicationPage from '@/pages/ReplicationPage.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -7,6 +8,7 @@ const router = createRouter({
   routes: [
     { path: '/', component: LoginPage },
     { path: '/main', component: MainPage },
+    { path: '/replication', component: ReplicationPage },
   ],
 })
 

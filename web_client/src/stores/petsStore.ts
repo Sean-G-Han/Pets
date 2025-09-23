@@ -14,5 +14,8 @@ export const usePetsStore = defineStore('pets', {
     setPets(pets: Pet[]) {
       this.pets = pets
     },
+    addPet(pet: Pet) {
+      this.pets.push(pet)
+    },
   },
 })
