@@ -2,8 +2,8 @@
 import { ref, onMounted } from 'vue'
 import PetRenderer from './PetRenderer.vue'
 import { usePetsStore } from '@/stores/petsStore'
-import type { Pet } from './types/pets'
-import router from './router'
+import type { Pet } from '@/types/pets'
+import router from '@/router'
 
 const petsStore = usePetsStore()
 const isOpen = ref(true)

@@ -32,6 +32,10 @@ function getToken(req) {
   return req.cookies?.access_token || null;
 }
 
+const _statsBound = (stat) => {
+  return Math.max(-20, Math.min(20, Math.round(stat)));
+};
+
 const _checkUniqueUser = async (req, res, next) => {
   const { display_name } = req.body;
   try {
@@ -182,19 +186,22 @@ app.get("/my-pets", async (req, res) => {
 
   const { data, error } = await supabaseUser
     .from("Pets")
-    .select("species:Species(species_name), atk, def, spd, hp, id")
+    .select(`id, atk, def, spd, hp, Species(species_name, atk, def, spd, hp)`)
     .eq("owner_uid", user.id);
 
   if (error) return res.status(400).json({ error: error.code });
 
-  const flattened = data.map((pet) => ({
-    id: pet.id,
-    atk: pet.atk,
-    def: pet.def,
-    spd: pet.spd,
-    hp: pet.hp,
-    species_name: pet.species.species_name,
-  }));
+  const flattened = data.map((pet) => {
+    const base = pet.Species;
+    return {
+      id: pet.id,
+      species_name: base.species_name,
+      atk: Math.round(base.atk * (1 + pet.atk / 100)),
+      def: Math.round(base.def * (1 + pet.def / 100)),
+      spd: Math.round(base.spd * (1 + pet.spd / 100)),
+      hp: Math.round(base.hp * (1 + pet.hp / 100)),
+    };
+  });
 
   res.json({ pets: flattened });
 });
@@ -216,25 +223,26 @@ app.post(
 
     const { data: pets, error } = await supabaseUser
       .from("Pets")
-      .select(
-        "species:Species(species_name), species_id, atk, def, spd, hp, owner_uid"
-      )
+      .select(`species_id, atk, def, spd, hp, owner_uid, Species(species_name, atk, def, spd, hp)`)
       .in("id", [pet_id1, pet_id2]);
+
     if (error) return res.status(400).json({ error: error.code });
+    if (!pets || pets.length < 2)
+      return res.status(400).json({ error: "Both parents not found" });
 
     const childInsert = {
       species_id: pets[0].species_id,
-      atk: Math.floor(
-        ((pets[0].atk + pets[1].atk) / 2) * (0.9 + Math.random() * 0.2)
+      atk: _statsBound(
+        ((pets[0].atk + pets[1].atk) / 2) + (2.5 - Math.random() * 5)
       ),
-      def: Math.floor(
-        ((pets[0].def + pets[1].def) / 2) * (0.9 + Math.random() * 0.2)
+      def: _statsBound(
+        ((pets[0].def + pets[1].def) / 2) * (2.5 - Math.random() * 5)
       ),
-      spd: Math.floor(
-        ((pets[0].spd + pets[1].spd) / 2) * (0.9 + Math.random() * 0.2)
+      spd: _statsBound(
+        ((pets[0].spd + pets[1].spd) / 2) * (2.5 - Math.random() * 5)
       ),
-      hp: Math.floor(
-        ((pets[0].hp + pets[1].hp) / 2) * (0.9 + Math.random() * 0.2)
+      hp: _statsBound(
+        ((pets[0].hp + pets[1].hp) / 2) * (2.5 - Math.random() * 5)
       ),
       owner_uid: pets[0].owner_uid,
     };
@@ -242,14 +250,22 @@ app.post(
     const { data: insertedData, error: breedingError } = await supabaseUser
       .from("Pets")
       .insert([childInsert])
-      .select("id, atk, def, spd, hp, owner_uid");
+      .select(`id, atk, def, spd, hp, owner_uid, Species (species_name, atk, def, spd, hp)`);
 
     if (breedingError)
       return res.status(400).json({ error: breedingError.code });
 
+    const newPet = insertedData[0];
+    const base = newPet.Species;
+
     const childResponse = {
-      ...insertedData[0],
-      species_name: pets[0].species?.species_name ?? "ERROR",
+      id: newPet.id,
+      owner_uid: newPet.owner_uid,
+      species_name: base.species_name,
+      atk: Math.round(base.atk * (1 + newPet.atk / 100)),
+      def: Math.round(base.def * (1 + newPet.def / 100)),
+      spd: Math.round(base.spd * (1 + newPet.spd / 100)),
+      hp: Math.round(base.hp * (1 + newPet.hp / 100)),
     };
 
     console.log("New pet bred:", childResponse);
@@ -257,6 +273,7 @@ app.post(
     res.json({ message: "Breeding successful", child: childResponse });
   }
 );
+
 
 // Start server
 app.listen(process.env.PORT || 3000, () => console.log("Server running..."));

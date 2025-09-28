@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import MainMenuUI from '.././MainMenuUI.vue'
-import PetRenderer from '.././PetRenderer.vue'
-import type { Pet } from '.././types/pets'
+import MainMenuUI from '../components/MainMenuUI.vue'
+import PetRenderer from '../components/PetRenderer.vue'
+import type { Pet } from '../types/pets'
 import { ref } from 'vue'
 import '../style.css'
-import { usePetsStore } from '@/stores/petsStore'
+import { usePetsStore } from '../stores/petsStore'
 
 const displayPet = ref<Pet[]>([])
 const loading = ref(false)
@@ -20,7 +20,6 @@ const handlePetClick = (pet: Pet) => {
   }
 }
 async function replicatePets() {
-  // Placeholder for replication logic
   if (displayPet.value.length === 2) {
     const pet_id1 = displayPet.value[0].id
     const pet_id2 = displayPet.value[1].id
@@ -52,15 +51,15 @@ async function replicatePets() {
 }
 </script>
 <template>
-  <div class="main">
-    <div v-if="displayPet.length > 0" class="center-div">
+  <div class="main center-div">
+    <div class="center-div">
       <div class="replication-display">
-        <PetRenderer v-for="pet in displayPet" :key="pet.id" v-bind="pet" mode="card" />
+        <PetRenderer v-for="pet in displayPet" :key="pet.id" v-bind="pet" mode="large" />
       </div>
       <div class="replication-controls">
         <button class="replication-btn vt323-regular" @click="displayPet = []">Reset</button>
         <button
-          v-if="displayPet.length > 1"
+          :disabled="displayPet.length < 2 || loading"
           class="replication-btn vt323-regular"
           @click="replicatePets"
         >
@@ -84,8 +83,14 @@ async function replicatePets() {
   padding: 8px 16px;
   margin: 10px;
 }
+.replication-btn:disabled {
+  background-color: grey;
+  border: #ffffff 4px solid;
+  color: white;
+  cursor: not-allowed;
+}
 .replication-display {
   display: flex;
-  gap: 20px;
+  gap: 50px;
 }
 </style>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defineProps, computed } from 'vue'
-import './style.css'
+import '../style.css'
 
 type Props = {
   label: string

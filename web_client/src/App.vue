@@ -11,6 +11,6 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: rgb(255, 0, 0);
+  background: rgb(0, 0, 0);
 }
 </style>

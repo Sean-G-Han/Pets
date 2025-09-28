@@ -120,12 +120,12 @@ async function register() {
 }
 
 .card {
-  background-color: grey;
+  background-color: rgb(255, 255, 255);
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 10px;
   max-width: 400px;
-  width: 100%;
+  width: 80vw;
   border-radius: 8px;
 }
 
@@ -136,18 +136,19 @@ async function register() {
 
 .tabs button {
   flex: 1;
-  color: white;
+  color: rgb(0, 0, 0);
   padding: 10px;
   border: none;
-  background-color: grey;
+  background-color: rgb(224, 224, 224);
   cursor: pointer;
   border-radius: 4px 4px 0 0;
   font-weight: bold;
-  transition: background-color 0.2s;
+  transition: background-color color 0.2s;
 }
 
 .tabs button:hover {
   background-color: #d0d0d0;
+  color: rgb(255, 255, 255);
 }
 
 .tabs button.active {
