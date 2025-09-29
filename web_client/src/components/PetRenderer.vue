@@ -44,6 +44,7 @@ const clicked = () => {
   height: 100px;
   width: 100px;
   max-width: 20vw;
+  max-height: 20vw; /* a bit hacky but keeps it from getting too tall on mobile */
   display: inline-block;
   position: relative;
 }
@@ -51,6 +52,7 @@ const clicked = () => {
   height: 200px;
   width: 200px;
   max-width: 30vw;
+  max-height: 30vw; /* a bit hacky but keeps it from getting too tall on mobile */
   display: inline-block;
   position: relative;
 }
